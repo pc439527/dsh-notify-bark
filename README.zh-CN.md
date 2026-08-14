@@ -1,5 +1,7 @@
 # dsh-notify-bark
 
+[![awesome · DSH plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
+
 > **License:** MIT · **Requires:** Node ^22.19 · **Platform:** DSH Host + Web 设置页
 
 **[English](README.md) · [简体中文](README.zh-CN.md)**
