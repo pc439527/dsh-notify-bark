@@ -10,15 +10,15 @@
 - **浏览器半端**（`src/client/` + `lib/client.js`）：注册 settings.section 插槽，表单经 RPC 读写 Host 配置；**Bark 地址永不下发到浏览器**，只显示脱敏状态（已配置：`••••••••3F82`）。
 
 <p align="center">
-  <img width="900" alt="image" src="https://github.com/user-attachments/assets/f2829de8-f970-4e6e-a5bb-b581669adb36" />
+  <img width="900" alt="image" src="docs/images/settings-page.png" />
 </p>
 
 <p align="center">
-  <img width="480" alt="dsh-notify-bark" src="https://github.com/user-attachments/assets/0f823f4d-5498-4b01-99c4-985c7e724d58" />
+  <img width="480" alt="dsh-notify-bark" src="docs/images/plugin-card.jpg" />
 </p>
 
 <p align="center">
-  <img width="300" alt="Bark notification" src="https://github.com/user-attachments/assets/9bda30cc-b587-42d1-a4ea-d533b442558f" />
+  <img width="300" alt="Bark notification" src="docs/images/bark-notification.jpg" />
 </p>
 
 ## 通知事件（9 个开关）
