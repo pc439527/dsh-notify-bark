@@ -1,0 +1,24 @@
+diff --git a/README.md b/README.md
+index 6cfe2e6..4a26835 100644
+--- a/README.md
++++ b/README.md
+@@ -217,6 +217,7 @@ This list collects community plugins that are installable via `dsh plugin add` (
+ - [bill9109/dsh-webbridge](https://github.com/bill9109/dsh-webbridge) - DSH meets Kimi WebBridge.
+ - [BiBoyang/dsh-im-bridge](https://github.com/BiBoyang/dsh-im-bridge) - Two-way WeChat (iLink) bridge: turn-end and approval-request push, in-chat approve/reject and message injection, persistent dedup and convergent long-reply chunking; channel layer extensible to other IMs.
+ - [imetn/dsh-lark-bridge](https://github.com/imetn/dsh-lark-bridge) - Bidirectional Lark/Feishu controller for DeepSeek Harness with project and session routing, interactive cards, approvals, attachments, and task controls.
++- [pc439527/dsh-notify-bark](https://github.com/pc439527/dsh-notify-bark) - Bark push notifications to iPhone: turn completion, waiting-for-input, and approval events sent from the DSH Host.
+ 
+ 
+ ### Models & Providers
+diff --git a/README.zh.md b/README.zh.md
+index 00b7ee5..3b28806 100644
+--- a/README.zh.md
++++ b/README.zh.md
+@@ -216,6 +216,7 @@ DeepSeek Harness 是 DeepSeek 开源的 agent harness——既是可直接运行
+ - [bill9109/dsh-webbridge](https://github.com/bill9109/dsh-webbridge) — DSH 结合 Kimi WebBridge。
+ - [BiBoyang/dsh-im-bridge](https://github.com/BiBoyang/dsh-im-bridge) — 微信（iLink）双向桥：turn 完成/批准请求推送、聊天内批准与消息注入、持久去重与长回复收敛分段；通道层为多 IM 预留。
+ - [imetn/dsh-lark-bridge](https://github.com/imetn/dsh-lark-bridge) — DeepSeek Harness 的飞书/Lark 双向控制器，支持 Project 与 Session 路由、交互卡片、审批、附件和任务控制。
++- [pc439527/dsh-notify-bark](https://github.com/pc439527/dsh-notify-bark) — Bark 推送通知到 iPhone：回合完成、等待回答、等待授权等事件由 Host 端发送。
+ 
+ 
+ ### 🔌 模型与账号接入
