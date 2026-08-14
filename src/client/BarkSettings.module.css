@@ -1,0 +1,150 @@
+/* dsh-notify-bark settings section styling — mirrors lib/client.js css. */
+.section {
+  max-width: 760px;
+  color: var(--dsw-alias-label-primary);
+  flex-direction: column;
+  gap: 14px;
+  display: flex;
+}
+
+.heading {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.intro {
+  color: var(--dsw-alias-label-tertiary);
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.group {
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-bg-layer-2);
+  border-radius: 12px;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  display: flex;
+}
+
+.groupTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.row {
+  align-items: center;
+  gap: 10px;
+  display: flex;
+}
+
+.rowWide {
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  display: flex;
+}
+
+.check {
+  color: var(--dsw-alias-label-primary);
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 20px;
+  display: inline-flex;
+}
+
+.check input {
+  accent-color: var(--dsw-alias-state-business-primary);
+  flex: none;
+}
+
+.checkLabel {
+  min-width: 0;
+}
+
+.input {
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-bg-layer-1);
+  height: 32px;
+  min-width: 0;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  border-radius: 8px;
+  flex: 1;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary);
+  outline-offset: 1px;
+}
+
+.input::placeholder {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.num {
+  max-width: 110px;
+}
+
+.hint {
+  color: var(--dsw-alias-label-tertiary);
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.mask {
+  color: var(--dsw-alias-label-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.button {
+  border: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+  flex: none;
+  padding: 5px 12px;
+  font-size: 13px;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--dsw-alias-label-dimmed);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.status {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.statusOk {
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.statusError {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.label {
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
+  line-height: 20px;
+  flex: none;
+}

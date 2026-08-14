@@ -1,0 +1,12 @@
+# dsh-notify-bark bundle patch: inserts its plugin row into the profile
+# roster. Install with `dsh plugin --profile web add <path-or-git-url>`; the
+# patch layer is hot-applied through Cordis HMR (watchUserPatches) without a
+# server restart.
+#
+# The single row mounts BOTH halves: the Host side (session/event listener,
+# Bark HTTP sender, settings persistence via ctx.settings, and the
+# /dsh-notify-bark loopback RPC) and the browser side (the settings section
+# UI, via the dsh.client declaration in package.json).
+- insert:
+    - id: bark-notify
+      name: 'dsh-notify-bark'

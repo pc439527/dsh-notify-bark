@@ -1,0 +1,16 @@
+# 依赖与本地缓存
+node_modules/
+.pnpm-store/
+.npm-cache/
+
+# 日志
+*.log
+
+# 编辑器 / 系统
+.DS_Store
+
+# 打包产物（npm pack）
+*.tgz
+
+# pnpm 在本环境安装时自动生成的工作区配置（非插件内容）
+pnpm-workspace.yaml
