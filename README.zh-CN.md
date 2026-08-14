@@ -10,7 +10,7 @@
 - **浏览器半端**（`src/client/` + `lib/client.js`）：注册 settings.section 插槽，表单经 RPC 读写 Host 配置；**Bark 地址永不下发到浏览器**，只显示脱敏状态（已配置：`••••••••3F82`）。
 
 <p align="center">
-  <img width="900" alt="Settings page" src="https://github.com/user-attachments/assets/f2829de8-f970-4e6e-a5bb-b581669adb36" />
+  <img width="900" alt="image" src="https://github.com/user-attachments/assets/f2829de8-f970-4e6e-a5bb-b581669adb36" />
 </p>
 
 <p align="center">
