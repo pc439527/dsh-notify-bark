@@ -14,7 +14,6 @@ import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 // Type-only: pulls the ui-slots Context merge (ctx.slots) and the locale map.
 import type {} from '@deepseek-ai/dsh-client-ui-slots'
-import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-web-react'
 import { createSnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
 import { BarkSettingsSection } from './BarkSettings.tsx'
 import { en, zh, type BarkNotifyKey } from './locales.ts'
@@ -157,7 +156,6 @@ export function apply(ctx: ClientContext): void {
   ctx.inject(['slots', 'locale', 'connection'], (scope) => {
     const connection = scope.get('connection') as { rpc: { call(channel: string, endpoint: string, payload: unknown): Promise<unknown> } }
     const controller = new BarkSectionController(connection as never)
-    const useBark = bindSnapshotSelector(controller.store)
     const t = scope.locale.bind(NS)
 
     scope.slots.inject('settings.section', () => scope.slots.register({
@@ -166,7 +164,7 @@ export function apply(ctx: ClientContext): void {
       order: 40,
       label: () => t('nav'),
       locale: NS,
-      inject: () => ({ controller, useBark }),
+      inject: () => ({ controller, hooks: { bark: controller.store } }),
     }, BarkSettingsSection))
   })
 }
