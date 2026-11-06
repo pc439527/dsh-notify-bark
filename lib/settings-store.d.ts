@@ -159,9 +159,17 @@ export interface BarkEventMeta {
 /** Event metadata keyed by the settings event flag. */
 export declare const EVENT_META: Record<keyof BarkEventSettings, BarkEventMeta>;
 /**
- * Normalize a Bark endpoint: trim and strip trailing slashes so the JSON POST
- * hits exactly the server root (Bark V2 accepts `POST <base>` with a JSON
- * body carrying title/body/group/level).
+ * Normalize a Bark endpoint.
+ *
+ * The settings field expects the plain V2 base URL (`https://api.day.app/<key>`
+ * or a self-hosted equivalent) — the plugin POSTs a JSON body to it. Bark's
+ * docs show `curl -X GET 'https://api.day.app/<key>/title/body?group=…'`
+ * examples, which users often paste verbatim; accept those too and reduce them
+ * to the base so the saved secret and the outgoing request stay usable.
+ *
+ * @param input - raw field value (may be a whole curl command or a GET-style URL).
+ * @returns the normalized base URL, or `''` when the value is blank or is not a
+ *   usable http(s) URL.
  */
 export declare function sanitizeBarkUrl(input: string): string;
 /**

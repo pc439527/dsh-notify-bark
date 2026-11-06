@@ -54,6 +54,26 @@ test('sanitizeBarkUrl strips whitespace and trailing slashes', () => {
   assert.equal(sanitizeBarkUrl(''), '')
 })
 
+test('sanitizeBarkUrl reduces a pasted curl command / GET-style URL to the base', () => {
+  // Exactly the shape that produced "Failed to parse URL from curl -X GET …".
+  assert.equal(
+    sanitizeBarkUrl("curl -X GET 'https://api.day.app/abc123/title/body?group=example&ttl=600'"),
+    'https://api.day.app/abc123',
+  )
+  assert.equal(
+    sanitizeBarkUrl('https://api.day.app/abc123/%E6%A0%87%E9%A2%98/%E5%86%85%E5%AE%B9?group=example'),
+    'https://api.day.app/abc123',
+  )
+  // A plain base with a query is still reduced to the base.
+  assert.equal(sanitizeBarkUrl('https://api.day.app/abc123?group=example'), 'https://api.day.app/abc123')
+  // A two-segment self-hosted prefix is preserved (only /title/body is trimmed).
+  assert.equal(sanitizeBarkUrl('https://bark.example.com/bark/abc123/'), 'https://bark.example.com/bark/abc123')
+  // Non-URL garbage and a non-http protocol are rejected.
+  assert.equal(sanitizeBarkUrl('curl -X GET something weird'), '')
+  assert.equal(sanitizeBarkUrl('ftp://example.com/key'), '')
+  assert.equal(sanitizeBarkUrl('   '), '')
+})
+
 test('maskBarkUrl never reveals the device key', () => {
   const masked = maskBarkUrl('https://api.day.app/DEADBEEF3F82')
   assert.equal(masked.configured, true)

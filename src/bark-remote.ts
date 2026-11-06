@@ -13,7 +13,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import { Remote, RemoteError, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 import { buildTestPayload, sendBark } from './bark-service.ts'
-import { maskBarkUrl, type BarkSettings } from './settings-store.ts'
+import { maskBarkUrl, sanitizeBarkUrl, type BarkSettings } from './settings-store.ts'
 import {
   BARK_REMOTE_NAMESPACE,
   type BarkGetValue,
@@ -70,9 +70,9 @@ export class BarkSettingsRemote extends TypertRemoteService {
 
   @Remote async test(group?: string): Promise<BarkTestResult> {
     const settings = this.deps.getSettings()
-    const endpoint = settings.barkUrl.trim().replace(/\/+$/, '')
+    const endpoint = sanitizeBarkUrl(settings.barkUrl)
     if (endpoint.length === 0) {
-      throw new RemoteError('gateway/bad-request', '未配置 Bark 推送地址，请先填写并保存', {})
+      throw new RemoteError('gateway/bad-request', '未配置有效的 Bark 推送地址（请只填写基础地址，不要粘贴 curl 命令），请先修正并保存', {})
     }
     const resolved = typeof group === 'string' && group.trim().length > 0 ? group.trim() : settings.group
     await sendBark(endpoint, buildTestPayload(resolved))

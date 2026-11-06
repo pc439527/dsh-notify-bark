@@ -45,8 +45,20 @@ export class BarkSendError extends Error {
  * @throws {BarkSendError} on missing endpoint, non-2xx, timeout, or network failure.
  */
 export async function sendBark(endpoint: string, payload: BarkPayload, timeoutMs = 5000): Promise<void> {
-  const base = sanitizeBarkUrl(endpoint)
+  let base = sanitizeBarkUrl(endpoint)
   if (base.length === 0) throw new BarkSendError('未配置 Bark 推送地址', BARK_ERROR_CODES.NOT_CONFIGURED)
+  // Defend against legacy stored values that are not URLs at all (e.g. a whole
+  // pasted curl command): fetch() would otherwise throw "Failed to parse URL
+  // from …" with no hint about what to fix.
+  try {
+    const parsed = new URL(base)
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error('unsupported protocol')
+  } catch {
+    throw new BarkSendError(
+      'Bark 推送地址不是合法 http(s) URL：请只填基础地址（如 https://api.day.app/<key>），不要粘贴 curl 命令',
+      BARK_ERROR_CODES.NOT_CONFIGURED,
+    )
+  }
 
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)

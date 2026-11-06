@@ -12,7 +12,7 @@
  */
 
 import type { RemoteResult, TypertCodec, TypertRemoteContribution } from '@deepseek-ai/dsh-typert-protocol'
-import type { BarkSettings as Settings } from './settings-store.ts'
+import { sanitizeBarkUrl, type BarkSettings as Settings } from './settings-store.ts'
 
 /** npm package that owns the Remote methods. */
 export const BARK_REMOTE_PACKAGE = 'dsh-notify-bark'
@@ -89,18 +89,20 @@ export function validateSetPatch(patch: unknown): { message?: string; patch?: Ba
       }
     }
   }
-  const trimmed = record.barkUrl !== undefined ? sanitizeBarkUrl(String(record.barkUrl)) : undefined
   const next = { ...record }
-  if (trimmed !== undefined) {
-    if (trimmed.length > 0) next.barkUrl = trimmed
-    else Reflect.deleteProperty(next, 'barkUrl')
+  if (typeof record.barkUrl === 'string') {
+    const raw = record.barkUrl
+    const normalized = sanitizeBarkUrl(raw)
+    if (raw.trim().length === 0) {
+      // Explicitly blank means "leave the stored secret untouched".
+      Reflect.deleteProperty(next, 'barkUrl')
+    } else if (normalized.length === 0) {
+      return { message: 'set: barkUrl must be a valid http(s) URL (paste the base endpoint only, not a curl command)' }
+    } else {
+      next.barkUrl = normalized
+    }
   }
   return { patch: next as BarkSetPatch }
-}
-
-/** Endpoint normalization used by validation. */
-function sanitizeBarkUrl(input: string): string {
-  return input.trim().replace(/\/+$/, '')
 }
 
 /** Re-exported so the Host service normalizes with the same helper. */

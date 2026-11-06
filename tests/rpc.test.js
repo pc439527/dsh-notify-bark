@@ -37,3 +37,12 @@ test('validateSetPatch normalizes the endpoint and drops blank values', () => {
   // A blank url is dropped so it cannot wipe a stored endpoint silently.
   assert.equal('barkUrl' in validateSetPatch({ barkUrl: '   ' }).patch, false)
 })
+
+test('validateSetPatch accepts a pasted curl example but rejects non-URL text', () => {
+  const pasted = validateSetPatch({ barkUrl: "curl -X GET 'https://api.day.app/abc123/title/body?group=example&ttl=600'" })
+  assert.equal(pasted.message, undefined)
+  assert.equal(pasted.patch.barkUrl, 'https://api.day.app/abc123')
+  const bad = validateSetPatch({ barkUrl: 'curl -X GET https://… (this is documentation)' })
+  assert.ok(bad.message.includes('valid http(s) URL'))
+  assert.equal(bad.patch, undefined)
+})

@@ -36,6 +36,23 @@ test('sendBark throws NOT_CONFIGURED for an empty endpoint', async () => {
   )
 })
 
+test('sendBark normalizes a pasted curl command to the base instead of failing to parse', async () => {
+  let captured = null
+  globalThis.fetch = async (url) => {
+    captured = url
+    return new Response('{"code":200,"message":"success"}', { status: 200 })
+  }
+  await sendBark("curl -X GET 'https://api.day.app/abc/title/body?group=x&ttl=600'", { title: 't', body: 'b' })
+  assert.equal(captured, 'https://api.day.app/abc')
+})
+
+test('sendBark reports a clear NOT_CONFIGURED error for non-URL text', async () => {
+  await assert.rejects(
+    () => sendBark('this is not a url at all', { title: 't', body: 'b' }),
+    (error) => error instanceof BarkSendError && error.code === BARK_ERROR_CODES.NOT_CONFIGURED,
+  )
+})
+
 test('sendBark aborts on timeout and reports BARK_TIMEOUT', async () => {
   globalThis.fetch = async (_url, init) => new Promise((_resolve, reject) => {
     init.signal.addEventListener('abort', () => {

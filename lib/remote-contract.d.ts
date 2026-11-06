@@ -11,7 +11,7 @@
  * @module dsh-notify-bark/remote-contract
  */
 import type { RemoteResult, TypertCodec, TypertRemoteContribution } from '@deepseek-ai/dsh-typert-protocol';
-import type { BarkSettings as Settings } from './settings-store.ts';
+import { sanitizeBarkUrl, type BarkSettings as Settings } from './settings-store.ts';
 /** npm package that owns the Remote methods. */
 export declare const BARK_REMOTE_PACKAGE = "dsh-notify-bark";
 /** Wire namespace of this plugin's Remote surface. */
@@ -56,8 +56,6 @@ export declare function validateSetPatch(patch: unknown): {
     message?: string;
     patch?: BarkSetPatch;
 };
-/** Endpoint normalization used by validation. */
-declare function sanitizeBarkUrl(input: string): string;
 /** Re-exported so the Host service normalizes with the same helper. */
 export { sanitizeBarkUrl };
 /** Client-strict codec of the get envelope. */
