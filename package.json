@@ -1,7 +1,7 @@
 {
   "name": "dsh-notify-bark",
   "description": "Bark 推送通知插件：DSH Host 端监听回合结束 / 等待回答 / 等待授权等事件，通过 Bark Server 推送到 iPhone。设置页经专用 RPC 读写 Host 配置（Bark 地址脱敏，不落地到浏览器）。",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "packageManager": "pnpm@11.21.0",
   "engines": { "node": "^22.19.0 || >=24.0.0" },
@@ -21,17 +21,21 @@
     ".": { "types": "./lib/index.d.ts", "default": "./lib/index.js" },
     "./client": { "default": "./lib/client.js" },
     "./src/*": "./src/*",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
     "./package.json": "./package.json"
   },
   "files": [
     "lib/**/*.js", "lib/**/*.d.ts", "lib/**/*.js.map",
-    "src", "scripts", "cordis.patch.yml", "README.md", "LICENSE"
+    "src", "scripts", "cordis.patch.yml", "README.md", "README.zh-CN.md", "LICENSE",
+    "locale/*.json", "icon.svg"
   ],
   "dsh": {
     "bundle": { "patch": "./cordis.patch.yml" },
     "client": {
       "inject": [
         "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-settings",
         "@deepseek-ai/dsh-client-ui-renderer",
         "@deepseek-ai/dsh-api-remotes"
       ],
@@ -39,28 +43,27 @@
     }
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "^4.0.4",
-    "@deepseek-ai/dsh-api-gateway": "^0.2.0-rc.2",
-    "@deepseek-ai/dsh-api-remotes": "^0.2.0-rc.2",
-    "@deepseek-ai/dsh-client-locale": "^0.2.0-rc.2",
-    "@deepseek-ai/dsh-client-locale": "^0.2.0-rc.2",
-    "@deepseek-ai/dsh-client-store": "^0.2.0-rc.2",
-    "@deepseek-ai/dsh-client-ui-renderer": "^0.2.0-rc.2",
-    "@deepseek-ai/dsh-client-ui-settings": "^0.2.0-rc.2",
-    "@deepseek-ai/dsh-client-ui-slots": "^0.2.0-rc.2",
-    "@deepseek-ai/dsh-session": "^0.2.0-rc.2",
-    "@deepseek-ai/dsh-settings": "^0.2.0-rc.2",
-    "@deepseek-ai/dsh-typert-protocol": "^0.2.0-rc.2",
-    "@deepseek-ai/dsh-typert-registry": "^0.2.0-rc.2",
-    "@deepseek-ai/dsh-user-approval": "^0.2.0-rc.2",
-    "@deepseek-ai/schemastery": "^3.18.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "@deepseek-ai/cordis": "~4.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.20.0",
     "@types/react": "~18.3.1",
     "@types/react-dom": "~18.3.0",
-    "typescript": "^5.9.0"
+    "typescript": "^5.9.0",
+    "@deepseek-ai/schemastery": "~3.19.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@deepseek-ai/dsh-api-gateway": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-api-remotes": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-locale": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-store": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-ui-settings": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-session": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-settings": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-typert-registry": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-user-approval": "0.2.2-rc.1"
   }
 }

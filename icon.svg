@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Bark notifications">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5b8cff"/>
+      <stop offset="1" stop-color="#8a5bff"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#bg)"/>
+  <!-- notification bell -->
+  <path d="M32 15c-7 0-12 5-12 12v7l-4 6v2h32v-2l-4-6v-7c0-7-5-12-12-12z" fill="#ffffff"/>
+  <path d="M27 44a5 5 0 0 0 10 0z" fill="#ffffff"/>
+  <!-- small "signal" dot -->
+  <circle cx="45" cy="18" r="5" fill="#ffd35b" stroke="#ffffff" stroke-width="1.5"/>
+</svg>

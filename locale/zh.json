@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Bark 通知",
+    "description": "把 DSH 的回合结束、等待回答、等待授权等事件通过 Bark 推送到 iPhone，并提供专用设置页。"
+  }
+}

@@ -2,7 +2,7 @@
 
 [![awesome · DSH plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
 
-> **License:** MIT · **Requires:** Node ^22.19 · **DSH:** 0.2.0-rc.2 (`dsh-client-store` era) · **Platform:** DSH Host + Web settings page
+> **License:** MIT · **Requires:** Node ^22.19 · **DSH:** 0.2.2-rc.1 (inlined client module table era) · **Platform:** DSH Host + Web settings page
 
 **[English](README.md) · [简体中文](README.zh-CN.md)**
 
