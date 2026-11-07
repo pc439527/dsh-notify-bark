@@ -63,6 +63,7 @@ Refresh the browser settings page (gear → Bark notifications) to see the confi
 - **No built-in keys:** `barkUrl` defaults to empty; each deployer fills in their own Bark URL on the settings page (`https://api.day.app/your-key`). This repository contains no real credentials (tests use only a fake `testkey`).
 - **Credentials never reach the browser:** `barkUrl` is declared `role('secret')` in the schema; the Remote get answers only a masked status (configured: `••••••••3F82`) and logs only `configured: true/false`.
 - **Config is stored on the Host only:** written to the profile's DSH settings document on the Host and never uploaded to any third party; notifications are sent only to the Bark URL you configured.
+- **Paste-friendly endpoint field:** you can paste Bark's documented `curl` example (e.g. `curl -X GET 'https://api.day.app/KEY/title/body?...'`) — the plugin extracts the embedded URL and reduces it back to the base endpoint; non-URL text is rejected with an actionable error instead of an opaque parse failure.
 
 ## Development
 
@@ -110,3 +111,7 @@ Refresh the browser settings page (gear → Bark notifications) to see the confi
 ## License
 
 [MIT](LICENSE). Provided as-is, without any express or implied warranty; any loss arising from use of this plugin is borne by the user. Contributors agree to license their contributions under MIT.
+
+---
+
+[![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)

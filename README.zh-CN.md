@@ -63,6 +63,7 @@
 - **无内置密钥**：`barkUrl` 默认值为空，由每个部署者自行在设置页填写自己的 Bark 地址（`https://api.day.app/你的key`）；本仓库不含任何真实凭据（测试仅用假 key `testkey`）。
 - **凭据不进浏览器**：`barkUrl` 在 schema 中声明为 `role('secret')`，Remote 读取只回传脱敏状态（已配置：`••••••••3F82`），日志只输出 `configured: true/false`。
 - **配置只存 Host**：写入 Host 端 profile 的 DSH 设置文档，不会上传到任何第三方；通知仅发送到你配置的 Bark 地址。
+- **地址栏支持粘贴 curl 示例**：可以直接粘贴 Bark 文档里的 `curl` 示例（如 `curl -X GET 'https://api.day.app/KEY/title/body?...'`）——插件会提取其中的 URL 并还原为基础地址；非 URL 文本会得到明确的错误提示，而不是晦涩的解析失败。
 
 ## 开发
 
@@ -110,3 +111,7 @@
 ## 许可证
 
 [MIT](LICENSE)。按现状提供，无任何明示或暗示的担保；因使用本插件造成的任何损失由使用者自行承担。贡献者提交代码即视为同意以 MIT 许可授权。
+
+---
+
+[![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
