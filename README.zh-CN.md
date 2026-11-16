@@ -58,6 +58,12 @@
 
 浏览器刷新设置页（齿轮 → Bark 通知）即可看到配置表单。
 
+### 安装后提示找不到模块
+
+旧版依赖声明曾把 Host 运行时必需的 `@deepseek-ai/schemastery` 和 `@deepseek-ai/dsh-typert-protocol` 误放在 `devDependencies` 中，可能导致本地开发正常、别人安装后 Host 导入失败。现已将它们移至 `dependencies`，由包管理器随插件安装，无需删除 schema 或改写 RPC。
+
+已安装旧 Git 修订的用户需要更新或重新安装包含本修复的修订；仅刷新页面不会补装依赖。如果仍然失败，请保留完整错误日志，并区分 `ERR_MODULE_NOT_FOUND`（模块解析失败）与 RPC 方法或服务不可用（需要核对宿主接口兼容性）。
+
 ## 安全与隐私
 
 - **无内置密钥**：`barkUrl` 默认值为空，由每个部署者自行在设置页填写自己的 Bark 地址（`https://api.day.app/你的key`）；本仓库不含任何真实凭据（测试仅用假 key `testkey`）。

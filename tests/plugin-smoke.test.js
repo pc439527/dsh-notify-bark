@@ -7,6 +7,14 @@ import { DEFAULT_SETTINGS } from '../lib/settings-store.js'
 import { apply as applyHost, Config as HostConfig, name as hostName, PROFILE_ENTRY_ID } from '../lib/index.js'
 import { barkRemote } from '../lib/remote-contract.js'
 
+test('host runtime imports are declared as production dependencies', () => {
+  const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
+  for (const name of ['@deepseek-ai/schemastery', '@deepseek-ai/dsh-typert-protocol']) {
+    assert.ok(manifest.dependencies?.[name], `${name} must be installed for consumers`)
+    assert.equal(manifest.devDependencies?.[name], undefined)
+  }
+})
+
 function liveConfig(overrides = {}) {
   const values = {
     enabled: true,

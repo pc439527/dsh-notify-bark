@@ -58,6 +58,12 @@ Or from a local path:
 
 Refresh the browser settings page (gear → Bark notifications) to see the configuration form.
 
+### Module not found after installation
+
+The previous manifest incorrectly listed the Host runtime packages `@deepseek-ai/schemastery` and `@deepseek-ai/dsh-typert-protocol` under `devDependencies`. This could let local development succeed while the installed plugin failed during Host imports. Both are now declared in `dependencies` so the package manager installs them with the plugin; removing the schema or rewriting RPC is unnecessary for this dependency issue.
+
+Users with an older Git revision installed must update or reinstall a revision containing the fix; refreshing the page alone does not install missing dependencies. If loading still fails, retain the full error log and distinguish `ERR_MODULE_NOT_FOUND` (module resolution) from unavailable RPC methods or services (Host API compatibility).
+
 ## Security & privacy
 
 - **No built-in keys:** `barkUrl` defaults to empty; each deployer fills in their own Bark URL on the settings page (`https://api.day.app/your-key`). This repository contains no real credentials (tests use only a fake `testkey`).
