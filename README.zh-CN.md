@@ -6,7 +6,7 @@
 
 **[English](README.md) · [简体中文](README.zh-CN.md)**
 
-[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）的 [Bark](https://github.com/Finb/Bark) 推送通知插件：**DSH Host 端**监听回合结束、等待回答、等待授权等事件，通过 Bark Server 把通知推送到 iPhone。通知完全在 Host 发送——浏览器关掉、页面刷新、电脑休眠都不影响推送。
+[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）的 [Bark](https://github.com/Finb/Bark) 推送通知插件：**DSH Host 端**监听回合结束、等待回答、等待授权等事件，通过 Bark Server 把通知推送到 iPhone。通知完全在 Host 发送，关闭或刷新浏览器不影响推送。运行 Host 的电脑需要保持唤醒，DSH 持续运行且网络可用。
 
 - **Host 半端**（`src/index.ts` + `lib/*.js`）：session/event 监听 + Bark HTTP 发送 + 插件条目自带的 `Config` schema（volatile 字段经 DSH 0.2 的 `ctx.settings` 配置文档持久化并热生效）+ barkNotify Typert Remote（随共享 `/api` 通道提供）。
 - **浏览器半端**（`src/client/` + `lib/client.js`）：注册 settings.section 插槽，表单经挂载的 `barkNotify` Remote 命名空间读写 Host 配置；**Bark 地址永不下发到浏览器**，只显示脱敏状态（已配置：`••••••••3F82`）。
@@ -57,6 +57,14 @@
           name: 'dsh-notify-bark'
 
 浏览器刷新设置页（齿轮 → Bark 通知）即可看到配置表单。
+
+### 配置通知
+
+1. 在 iPhone 上安装 [Bark](https://github.com/Finb/Bark)，复制基础推送地址（例如 `https://api.day.app/你的key`）。
+2. 打开 **设置 → Bark 通知**，启用通知，粘贴地址并保存。已保存的地址仅显示脱敏状态。
+3. 点击 **测试推送** 确认手机能收到通知，再选择需要的通知事件，调整通知内容和分组。
+
+设置页统一使用面板标题，只显示一次。全部配置项下方提供 **Bark 开源仓库 ↗** 链接，点击会在新标签页打开 [Bark 开源仓库](https://github.com/Finb/Bark)。
 
 ### 安装后提示找不到模块
 

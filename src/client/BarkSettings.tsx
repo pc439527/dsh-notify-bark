@@ -84,7 +84,6 @@ export function BarkSettingsSection(props: BarkSettingsSectionProps): ReactEleme
 
   return (
     <div className={styles.section}>
-      <h2 className={styles.heading}>{t('title')}</h2>
       <p className={styles.intro}>{t('intro')}</p>
 
       <div className={styles.group}>
@@ -196,6 +195,10 @@ export function BarkSettingsSection(props: BarkSettingsSectionProps): ReactEleme
         </div>
         <p className={styles.hint}>{t('groupHint')}</p>
       </div>
+
+      <a className={styles.repositoryLink} href="https://github.com/Finb/Bark" target="_blank" rel="noopener noreferrer">
+        {t('repository')}
+      </a>
     </div>
   )
 }

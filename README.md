@@ -6,7 +6,7 @@
 
 **[English](README.md) · [简体中文](README.zh-CN.md)**
 
-A [Bark](https://github.com/Finb/Bark) push-notification plugin for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH): the **DSH Host** listens for events such as turn completion, waiting for your answer, and waiting for approval, and pushes notifications to your iPhone through a Bark Server. Notifications are sent entirely from the Host — closing the browser, refreshing the page, or putting your computer to sleep does not affect delivery.
+A [Bark](https://github.com/Finb/Bark) push-notification plugin for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH): the **DSH Host** listens for events such as turn completion, waiting for your answer, and waiting for approval, and pushes notifications to your iPhone through a Bark Server. Notifications are sent entirely from the Host, so closing or refreshing the browser does not affect delivery. The machine running the Host must remain awake, with DSH running and network access available.
 
 - **Host half** (`src/index.ts` + `lib/*.js`): session/event listener + Bark HTTP sending + the plugin entry's own `Config` schema (volatile fields persisted and hot-applied through DSH 0.2's `ctx.settings` document) + the `barkNotify` Typert Remote served on the shared `/api` channel.
 - **Browser half** (`src/client/` + `lib/client.js`): registers a `settings.section` slot; the form calls the mounted `barkNotify` Remote namespace. **The Bark URL never crosses the wire to the browser** — only a masked status is shown (configured: `••••••••3F82`).
@@ -57,6 +57,14 @@ Or from a local path:
           name: 'dsh-notify-bark'
 
 Refresh the browser settings page (gear → Bark notifications) to see the configuration form.
+
+### Configure notifications
+
+1. Install [Bark](https://github.com/Finb/Bark) on your iPhone and copy its base push endpoint (for example, `https://api.day.app/your-key`).
+2. Open **Settings → Bark notifications**, enable notifications, paste the endpoint, and save it. The saved endpoint is shown only as a masked status.
+3. Click **Send test push** to check delivery, then choose which events to receive and adjust the notification content and group.
+
+The page uses the settings panel's title once. A **Bark source on GitHub ↗** link below all configuration options opens the [Bark open-source repository](https://github.com/Finb/Bark) in a new tab.
 
 ### Module not found after installation
 

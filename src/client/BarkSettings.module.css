@@ -7,10 +7,18 @@
   display: flex;
 }
 
-.heading {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
+.repositoryLink {
+  align-self: flex-start;
+  color: var(--dsw-alias-state-business-primary);
+  font-size: 12px;
+  line-height: 20px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.repositoryLink:focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary);
+  outline-offset: 3px;
 }
 
 .intro {

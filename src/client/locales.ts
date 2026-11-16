@@ -9,7 +9,7 @@ export const NS = 'bark-notify'
 /** Simplified Chinese copy. */
 export const zh = {
   'nav': 'Bark 通知',
-  'title': 'Bark 通知',
+  'repository': 'Bark 开源仓库 ↗',
   'intro': 'DSH Host 在回合结束、等待回答、等待授权等事件发生时，通过 Bark Server 推送到 iPhone。浏览器关掉也不影响。',
   'loading': '加载中…',
   'loadError': '设置加载失败：{error}',
@@ -47,7 +47,7 @@ export const zh = {
 /** English copy. */
 export const en = {
   'nav': 'Bark notifications',
-  'title': 'Bark notifications',
+  'repository': 'Bark source on GitHub ↗',
   'intro': 'The DSH Host pushes to your iPhone through a Bark server when turns end, the agent waits for your answer, or an approval is requested — even with the browser closed.',
   'loading': 'Loading…',
   'loadError': 'Failed to load settings: {error}',
