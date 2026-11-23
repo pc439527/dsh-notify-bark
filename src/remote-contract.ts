@@ -12,7 +12,7 @@
  */
 
 import type { RemoteResult, TypertCodec, TypertRemoteContribution } from '@deepseek-ai/dsh-typert-protocol'
-import { sanitizeBarkUrl, type BarkSettings as Settings } from './settings-store.ts'
+import { MAX_BODY_CHARS, MIN_BODY_CHARS, sanitizeBarkUrl, type BarkSettings as Settings } from './settings-store.ts'
 
 /** npm package that owns the Remote methods. */
 export const BARK_REMOTE_PACKAGE = 'dsh-notify-bark'
@@ -81,6 +81,9 @@ export function validateSetPatch(patch: unknown): { message?: string; patch?: Ba
       if (typeof value !== 'boolean') return { message: `set: ${key} must be a boolean` }
     } else if (key === 'maxBodyChars') {
       if (typeof value !== 'number' || !Number.isFinite(value)) return { message: 'set: maxBodyChars must be a number' }
+      if (!Number.isInteger(value) || value < MIN_BODY_CHARS || value > MAX_BODY_CHARS) {
+        return { message: `set: maxBodyChars must be an integer between ${MIN_BODY_CHARS} and ${MAX_BODY_CHARS}` }
+      }
     } else if (key === 'barkUrl' || key === 'group') {
       if (typeof value !== 'string') return { message: `set: ${key} must be a string` }
     } else if (key === 'events') {

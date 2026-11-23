@@ -72,13 +72,20 @@ export function apply(ctx: Context, config: Config): void {
     }, 'bark-notify: settings fallback')
   })
 
+  let updateQueue: Promise<void> = Promise.resolve()
+
   registerBarkRemote(ctx, {
     getSettings: read,
     update: async (patch: BarkSetPatch) => {
-      const forms = settings
-      if (forms === undefined) throw new Error('设置服务不可用')
-      const row = forms.describe().find((entry) => String(entry.ns) === PROFILE_ENTRY_ID)
-      await forms.update(PROFILE_ENTRY_ID, patch, row?.revision)
+      const run = async (): Promise<void> => {
+        const forms = settings
+        if (forms === undefined) throw new Error('设置服务不可用')
+        const row = forms.describe().find((entry) => String(entry.ns) === PROFILE_ENTRY_ID)
+        await forms.update(PROFILE_ENTRY_ID, patch, row?.revision)
+      }
+      const task = updateQueue.then(run, run)
+      updateQueue = task.catch(() => {})
+      await task
     },
   })
 

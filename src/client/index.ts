@@ -26,7 +26,7 @@ import { barkRemote, type BarkGetValue, type BarkNotifyRemoteApi, type BarkSetPa
 import { BarkSettingsSection } from './BarkSettings.tsx'
 import { en, zh, type BarkNotifyKey } from './locales.ts'
 
-export { BarkSettingsSection } from './BarkSettings.tsx'
+export { BarkSettingsSection, parseBodyCharsDraft } from './BarkSettings.tsx'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
@@ -80,11 +80,14 @@ export class BarkSectionController {
     testResult: null,
   })
 
+  private queue: Promise<void> = Promise.resolve()
+  private pendingSaves = 0
+
   constructor(private readonly namespace: BarkNotifyRemoteApi, private readonly mounted: Promise<unknown>) {
     void this.load()
   }
 
-  async load(): Promise<void> {
+  private async fetchIntoStore(preserveError: boolean): Promise<void> {
     try {
       await this.mounted
       const result = await this.namespace.get()
@@ -95,35 +98,68 @@ export class BarkSectionController {
         draft.settings = value.settings
         draft.urlConfigured = value.status.configured
         draft.urlMasked = value.status.masked
-        draft.saveError = null
+        if (!preserveError) draft.saveError = null
       })
     } catch (error) {
+      if (preserveError) return
+      const message = error instanceof Error ? error.message : String(error)
       this.store.update((draft) => {
-        draft.status = 'error'
-        draft.saveError = error instanceof Error ? error.message : String(error)
+        if (draft.settings === null) draft.status = 'error'
+        draft.saveError = message
       })
     }
   }
 
+  async load(): Promise<void> {
+    const task = this.queue.then(async () => {
+      if (this.pendingSaves > 0) return
+      await this.fetchIntoStore(false)
+    })
+    this.queue = task.catch(() => {})
+    return task
+  }
+
   async save(patch: BarkSetPatch): Promise<void> {
+    this.pendingSaves += 1
     this.store.update((draft) => {
       draft.saving = true
       draft.saveError = null
+      if (draft.settings !== null) {
+        const next = { ...draft.settings }
+        if (patch.enabled !== undefined) next.enabled = patch.enabled
+        if (patch.events !== undefined) next.events = { ...next.events, ...patch.events }
+        if (patch.includeAssistantText !== undefined) next.includeAssistantText = patch.includeAssistantText
+        if (patch.maxBodyChars !== undefined) next.maxBodyChars = patch.maxBodyChars
+        if (patch.group !== undefined) next.group = patch.group
+        draft.settings = next
+      }
     })
-    try {
-      await this.mounted
-      const result = await this.namespace.set(patch)
-      if (!result.ok) throw new Error(result.error.message)
-      await this.load()
-    } catch (error) {
-      this.store.update((draft) => {
-        draft.saveError = error instanceof Error ? error.message : String(error)
-      })
-    } finally {
-      this.store.update((draft) => {
-        draft.saving = false
-      })
-    }
+    const task = this.queue.then(async () => {
+      try {
+        await this.mounted
+        const result = await this.namespace.set(patch)
+        if (!result.ok) throw new Error(result.error.message)
+        if (this.pendingSaves === 1) {
+          await this.fetchIntoStore(false)
+        }
+      } catch (error) {
+        this.store.update((draft) => {
+          draft.saveError = error instanceof Error ? error.message : String(error)
+        })
+        if (this.pendingSaves === 1) {
+          await this.fetchIntoStore(true)
+        }
+      } finally {
+        this.pendingSaves -= 1
+        if (this.pendingSaves === 0) {
+          this.store.update((draft) => {
+            draft.saving = false
+          })
+        }
+      }
+    })
+    this.queue = task.catch(() => {})
+    return task
   }
 
   async test(group: string): Promise<void> {

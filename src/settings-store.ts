@@ -75,6 +75,12 @@ export interface Config {
   group: Volatile<string>
 }
 
+/** Minimum allowed notification body length. */
+export const MIN_BODY_CHARS = 1
+
+/** Maximum allowed notification body length. */
+export const MAX_BODY_CHARS = 4000
+
 /** Composition defaults — what a fresh install ships with. */
 export const DEFAULT_SETTINGS: BarkSettings = {
   enabled: true,
@@ -115,7 +121,7 @@ export const Config = z.object({
     planReview: z.boolean().default(false),
   }).volatile(),
   includeAssistantText: z.boolean().default(true).volatile(),
-  maxBodyChars: z.number().min(1).max(4000).default(300).volatile(),
+  maxBodyChars: z.number().min(MIN_BODY_CHARS).max(MAX_BODY_CHARS).default(300).volatile(),
   group: z.string().default('DeepSeek Harness').volatile(),
 })
 

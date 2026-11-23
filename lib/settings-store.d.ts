@@ -70,6 +70,10 @@ export interface Config {
     /** Bark group the notifications land in. */
     group: Volatile<string>;
 }
+/** Minimum allowed notification body length. */
+export declare const MIN_BODY_CHARS = 1;
+/** Maximum allowed notification body length. */
+export declare const MAX_BODY_CHARS = 4000;
 /** Composition defaults — what a fresh install ships with. */
 export declare const DEFAULT_SETTINGS: BarkSettings;
 /**

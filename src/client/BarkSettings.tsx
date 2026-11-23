@@ -7,10 +7,28 @@
  * @module dsh-notify-bark/client/BarkSettings
  */
 
-import { useState, type ReactElement } from 'react'
+import { useEffect, useRef, useState, type ReactElement } from 'react'
 import type { SnapshotSelectorHook } from '@deepseek-ai/dsh-client-store'
+import { MAX_BODY_CHARS, MIN_BODY_CHARS } from '../settings-store.ts'
 import { EVENT_KEYS, type BarkSectionController, type BarkSectionSnapshot } from './index.ts'
 import * as styles from './BarkSettings.module.css'
+
+const FULLWIDTH_DIGITS = /[\uFF10-\uFF19]/g
+
+/**
+ * Parse a user-entered draft string for `maxBodyChars`.
+ *
+ * Returns `null` when the draft is empty or not a finite number (so the input
+ * reverts to the currently saved value instead of overwriting it), and
+ * otherwise returns an integer clamped to `[MIN_BODY_CHARS, MAX_BODY_CHARS]`.
+ */
+export function parseBodyCharsDraft(raw: string): number | null {
+  const normalized = raw.replace(FULLWIDTH_DIGITS, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0)).trim()
+  if (normalized.length === 0) return null
+  const parsed = Number(normalized)
+  if (!Number.isFinite(parsed)) return null
+  return Math.min(MAX_BODY_CHARS, Math.max(MIN_BODY_CHARS, Math.round(parsed)))
+}
 
 /** Props composed by the settings.section slot registration. */
 export interface BarkSettingsSectionProps {
@@ -27,8 +45,15 @@ export function BarkSettingsSection(props: BarkSettingsSectionProps): ReactEleme
   const { t, controller, useSnapshot } = props
   const snap = useSnapshot((snapshot) => snapshot)
   const [urlDraft, setUrlDraft] = useState('')
-  const [groupDraft, setGroupDraft] = useState('')
-  const [bodyCharsDraft, setBodyCharsDraft] = useState('')
+  const [groupDraft, setGroupDraft] = useState<string | null>(null)
+  const [bodyCharsDraft, setBodyCharsDraft] = useState<string | null>(null)
+  const [lastSaveArea, setLastSaveArea] = useState<'url' | 'content'>('url')
+  const skipBodyBlurRef = useRef(false)
+  const skipGroupBlurRef = useRef(false)
+
+  useEffect(() => {
+    void controller.load()
+  }, [controller])
 
   if (snap.status === 'loading') {
     return <p className={styles.hint}>{t('loading')}</p>
@@ -46,9 +71,7 @@ export function BarkSettingsSection(props: BarkSettingsSectionProps): ReactEleme
 
   const toggleEvent = (key: keyof typeof settings.events): void => {
     const next = { ...settings.events, [key]: !settings.events[key] }
-    controller.store.update((draft) => {
-      draft.settings = { ...draft.settings!, events: next }
-    })
+    setLastSaveArea('url')
     void controller.save({ events: next })
   }
 
@@ -56,29 +79,48 @@ export function BarkSettingsSection(props: BarkSettingsSectionProps): ReactEleme
     const value = urlDraft.trim()
     if (value.length === 0) return
     setUrlDraft('')
+    setLastSaveArea('url')
     void controller.save({ barkUrl: value })
   }
 
-  const saveGroup = (): void => {
-    const value = groupDraft.trim()
-    if (value.length === 0) return
-    setGroupDraft('')
+  const commitGroup = (draft: string | null): void => {
+    if (draft === null) return
+    const value = draft.trim()
+    setGroupDraft(null)
+    const current = controller.store.getSnapshot().settings?.group ?? settings.group
+    if (value.length === 0 || value === current) return
+    setLastSaveArea('content')
     void controller.save({ group: value })
   }
 
-  const saveBodyChars = (): void => {
-    const parsed = Number(bodyCharsDraft)
-    if (!Number.isFinite(parsed)) {
-      setBodyCharsDraft('')
+  const saveGroup = (): void => {
+    if (skipGroupBlurRef.current) {
+      skipGroupBlurRef.current = false
       return
     }
-    const clamped = Math.min(4000, Math.max(1, Math.round(parsed)))
-    setBodyCharsDraft('')
-    void controller.save({ maxBodyChars: clamped })
+    commitGroup(groupDraft)
+  }
+
+  const commitBodyChars = (draft: string | null): void => {
+    if (draft === null) return
+    const parsed = parseBodyCharsDraft(draft)
+    setBodyCharsDraft(null)
+    const current = controller.store.getSnapshot().settings?.maxBodyChars ?? settings.maxBodyChars
+    if (parsed === null || parsed === current) return
+    setLastSaveArea('content')
+    void controller.save({ maxBodyChars: parsed })
+  }
+
+  const saveBodyChars = (): void => {
+    if (skipBodyBlurRef.current) {
+      skipBodyBlurRef.current = false
+      return
+    }
+    commitBodyChars(bodyCharsDraft)
   }
 
   const onTest = (): void => {
-    const group = groupDraft.trim().length > 0 ? groupDraft : settings.group
+    const group = groupDraft !== null && groupDraft.trim().length > 0 ? groupDraft.trim() : settings.group
     void controller.test(group)
   }
 
@@ -93,9 +135,7 @@ export function BarkSettingsSection(props: BarkSettingsSectionProps): ReactEleme
             checked={settings.enabled}
             onChange={(event) => {
               const next = event.target.checked
-              controller.store.update((draft) => {
-                draft.settings = { ...draft.settings!, enabled: next }
-              })
+              setLastSaveArea('url')
               void controller.save({ enabled: next })
             }}
           />
@@ -131,7 +171,7 @@ export function BarkSettingsSection(props: BarkSettingsSectionProps): ReactEleme
             {snap.testResult.ok ? t('testSent') : snap.testResult.message}
           </p>
         ) : null}
-        {snap.saveError !== null ? (
+        {snap.saveError !== null && lastSaveArea !== 'content' ? (
           <p className={styles.statusError} role="alert">
             {t('saveFailed', { error: snap.saveError })}
           </p>
@@ -156,9 +196,7 @@ export function BarkSettingsSection(props: BarkSettingsSectionProps): ReactEleme
             checked={settings.includeAssistantText}
             onChange={(event) => {
               const next = event.target.checked
-              controller.store.update((draft) => {
-                draft.settings = { ...draft.settings!, includeAssistantText: next }
-              })
+              setLastSaveArea('content')
               void controller.save({ includeAssistantText: next })
             }}
           />
@@ -169,14 +207,25 @@ export function BarkSettingsSection(props: BarkSettingsSectionProps): ReactEleme
           <span className={styles.label}>{t('maxBodyChars')}</span>
           <input
             className={`${styles.input} ${styles.num}`}
-            type="number"
-            min={1}
-            max={4000}
-            value={bodyCharsDraft.length > 0 ? bodyCharsDraft : settings.maxBodyChars}
-            onChange={(event) => setBodyCharsDraft(event.target.value)}
+            type="text"
+            inputMode="numeric"
+            aria-label={t('maxBodyChars')}
+            placeholder={String(settings.maxBodyChars)}
+            value={bodyCharsDraft ?? String(settings.maxBodyChars)}
+            onChange={(event) => {
+              skipBodyBlurRef.current = false
+              setBodyCharsDraft(event.target.value)
+            }}
             onBlur={saveBodyChars}
             onKeyDown={(event) => {
-              if (event.key === 'Enter') saveBodyChars()
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                commitBodyChars(bodyCharsDraft)
+              } else if (event.key === 'Escape') {
+                skipBodyBlurRef.current = true
+                setBodyCharsDraft(null)
+                event.currentTarget.blur()
+              }
             }}
           />
         </div>
@@ -185,15 +234,32 @@ export function BarkSettingsSection(props: BarkSettingsSectionProps): ReactEleme
           <input
             className={styles.input}
             type="text"
-            value={groupDraft.length > 0 ? groupDraft : settings.group}
-            onChange={(event) => setGroupDraft(event.target.value)}
+            aria-label={t('groupLabel')}
+            placeholder={settings.group}
+            value={groupDraft ?? settings.group}
+            onChange={(event) => {
+              skipGroupBlurRef.current = false
+              setGroupDraft(event.target.value)
+            }}
             onBlur={saveGroup}
             onKeyDown={(event) => {
-              if (event.key === 'Enter') saveGroup()
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                commitGroup(groupDraft)
+              } else if (event.key === 'Escape') {
+                skipGroupBlurRef.current = true
+                setGroupDraft(null)
+                event.currentTarget.blur()
+              }
             }}
           />
         </div>
         <p className={styles.hint}>{t('groupHint')}</p>
+        {snap.saveError !== null && lastSaveArea === 'content' ? (
+          <p className={styles.statusError} role="alert">
+            {t('saveFailed', { error: snap.saveError })}
+          </p>
+        ) : null}
       </div>
 
       <a className={styles.repositoryLink} href="https://github.com/Finb/Bark" target="_blank" rel="noopener noreferrer">
