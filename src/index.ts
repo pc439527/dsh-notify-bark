@@ -31,9 +31,8 @@ import type { BarkSetPatch } from './remote-contract.ts'
 export const name = 'bark-notify'
 
 /**
- * Required services: none hard — the settings seam and the connection service
- * are each awaited through `ctx.inject` inside apply, so a profile lacking
- * either still runs the event listener with the composition defaults.
+ * Settings is optional: profiles without it can still send notifications
+ * using the resolved Config.
  */
 export const inject: string[] = []
 
@@ -55,6 +54,8 @@ export { Config }
  */
 export function apply(ctx: Context, config: Config): void {
   const read = (): BarkSettings => readBarkSettings(config)
+  const delivery = new AbortController()
+  ctx.effect(() => () => delivery.abort(), 'bark-notify: cancel pending deliveries')
 
   // The settings service may be absent (headless compositions); writes then
   // reject with an actionable message instead of failing plugin load.
@@ -76,12 +77,14 @@ export function apply(ctx: Context, config: Config): void {
 
   registerBarkRemote(ctx, {
     getSettings: read,
+    deliverySignal: delivery.signal,
     update: async (patch: BarkSetPatch) => {
       const run = async (): Promise<void> => {
         const forms = settings
         if (forms === undefined) throw new Error('设置服务不可用')
-        const row = forms.describe().find((entry) => String(entry.ns) === PROFILE_ENTRY_ID)
-        await forms.update(PROFILE_ENTRY_ID, patch, row?.revision)
+        const row = forms.describe({ redactSecrets: true }).find((entry) => entry.ns === PROFILE_ENTRY_ID)
+        if (row === undefined) throw new Error('Bark 通知设置条目不可用，请刷新后重试')
+        await forms.update(PROFILE_ENTRY_ID, patch, row.revision)
       }
       const task = updateQueue.then(run, run)
       updateQueue = task.catch(() => {})
@@ -89,5 +92,5 @@ export function apply(ctx: Context, config: Config): void {
     },
   })
 
-  createEventListener(ctx, read)
+  createEventListener(ctx, read, delivery.signal)
 }

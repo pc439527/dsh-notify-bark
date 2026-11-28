@@ -20,6 +20,7 @@ export declare const BARK_ERROR_CODES: {
     readonly HTTP_ERROR: "BARK_HTTP_ERROR";
     readonly NETWORK_ERROR: "BARK_NETWORK_ERROR";
     readonly TIMEOUT: "BARK_TIMEOUT";
+    readonly CANCELLED: "BARK_CANCELLED";
 };
 /** A Bark delivery failure with a stable machine code. */
 export declare class BarkSendError extends Error {
@@ -32,9 +33,10 @@ export declare class BarkSendError extends Error {
  * @param endpoint - full Bark endpoint (https://api.day.app/<key> or a self-hosted server).
  * @param payload - Bark V2 JSON payload.
  * @param timeoutMs - abort bound for the whole request.
- * @throws {BarkSendError} on missing endpoint, non-2xx, timeout, or network failure.
+ * @param lifetime - optional signal that cancels delivery when the plugin unloads.
+ * @throws {BarkSendError} on invalid endpoint, non-2xx, cancellation, timeout, or network failure.
  */
-export declare function sendBark(endpoint: string, payload: BarkPayload, timeoutMs?: number): Promise<void>;
+export declare function sendBark(endpoint: string, payload: BarkPayload, timeoutMs?: number, lifetime?: AbortSignal): Promise<void>;
 /**
  * Build the test-notification payload. The test fires from the settings
  * section, so the workspace title is fixed copy.

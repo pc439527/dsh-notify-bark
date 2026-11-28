@@ -12,7 +12,7 @@
  */
 
 import type { RemoteResult, TypertCodec, TypertRemoteContribution } from '@deepseek-ai/dsh-typert-protocol'
-import { MAX_BODY_CHARS, MIN_BODY_CHARS, sanitizeBarkUrl, type BarkSettings as Settings } from './settings-store.ts'
+import { DEFAULT_SETTINGS, MAX_BODY_CHARS, MIN_BODY_CHARS, sanitizeBarkUrl, type BarkEventSettings, type BarkSettings as Settings } from './settings-store.ts'
 
 /** npm package that owns the Remote methods. */
 export const BARK_REMOTE_PACKAGE = 'dsh-notify-bark'
@@ -59,7 +59,7 @@ export interface BarkTestResult {
  * set business parameter: the settings patch to persist. barkUrl is optional
  * and carries a NEW value only — the section never restates the stored secret.
  */
-export type BarkSetPatch = Partial<Omit<Settings, 'barkUrl'>> & { barkUrl?: string }
+export type BarkSetPatch = Partial<Omit<Settings, 'events'>> & { events?: Partial<BarkEventSettings> }
 
 /** Guard a set patch against unknown fields and wrong scalar types. */
 export function validateSetPatch(patch: unknown): { message?: string; patch?: BarkSetPatch } {
@@ -89,6 +89,10 @@ export function validateSetPatch(patch: unknown): { message?: string; patch?: Ba
     } else if (key === 'events') {
       if (typeof value !== 'object' || value === null || Array.isArray(value)) {
         return { message: 'set: events must be an object' }
+      }
+      for (const [event, enabled] of Object.entries(value)) {
+        if (!Object.hasOwn(DEFAULT_SETTINGS.events, event)) return { message: 'set: events contains an unknown event' }
+        if (typeof enabled !== 'boolean') return { message: `set: events.${event} must be a boolean` }
       }
     }
   }

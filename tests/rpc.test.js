@@ -38,6 +38,12 @@ test('validateSetPatch keeps known fields and rejects unknown ones', () => {
   assert.equal(good.patch.maxBodyChars, 500)
 })
 
+test('validateSetPatch accepts partial event settings and rejects invalid nested fields', () => {
+  assert.deepEqual(validateSetPatch({ events: { aborted: true } }).patch, { events: { aborted: true } })
+  assert.match(validateSetPatch({ events: { completed: 'false' } }).message, /events\.completed must be a boolean/)
+  assert.match(validateSetPatch({ events: { toString: true } }).message, /unknown event/)
+})
+
 test('validateSetPatch normalizes the endpoint and drops blank values', () => {
   const set = validateSetPatch({ barkUrl: '  https://api.day.app/newkey// ' })
   assert.equal(set.patch.barkUrl, 'https://api.day.app/newkey')

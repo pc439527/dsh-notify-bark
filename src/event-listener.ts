@@ -12,7 +12,7 @@ import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
 // Type-only: pulls dsh-user-approval's session event-map augmentation, which
 // adds the approval/asked event to the SessionEventMap interface.
 import type {} from '@deepseek-ai/dsh-user-approval'
-import { sendBark } from './bark-service.ts'
+import { BARK_ERROR_CODES, BarkSendError, sendBark } from './bark-service.ts'
 import {
   EVENT_META,
   TURN_END_EVENT_FLAG,
@@ -166,9 +166,10 @@ export function createDedupLedger(maxEntries = 500): { test(key: string): boolea
  * Subscribe the plugin to `session/event` and push Bark notifications.
  * @param ctx - plugin context.
  * @param getSettings - live settings thunk (follows the settings section).
+ * @param deliverySignal - cancels pending sends when the plugin unloads.
  * @returns the disposer removing the listener (cordis ctx.on returns one).
  */
-export function createEventListener(ctx: Context, getSettings: () => BarkSettings): () => void {
+export function createEventListener(ctx: Context, getSettings: () => BarkSettings, deliverySignal?: AbortSignal): () => void {
   const dedup = createDedupLedger()
   // Newest assistant reply per session, tracked from the same firehose the
   // notifications ride, so turn/end never needs a synchronous session-log read
@@ -212,10 +213,10 @@ export function createEventListener(ctx: Context, getSettings: () => BarkSetting
       body,
       group: settings.group,
       level: meta.level,
-    }).catch((error: unknown) => {
-      // Never log the endpoint (it carries the device key).
-      const message = error instanceof Error ? error.message : String(error)
-      ctx.logger.warn(`[bark-notify] 推送失败（已配置:${settings.barkUrl.length > 0}）: ${message}`)
+    }, undefined, deliverySignal).catch((error: unknown) => {
+      if (error instanceof BarkSendError && error.code === BARK_ERROR_CODES.CANCELLED) return
+      const message = error instanceof BarkSendError ? error.message : '未知错误'
+      ctx.logger.warn(`[bark-notify] 推送失败：${message}`)
     })
   }
 

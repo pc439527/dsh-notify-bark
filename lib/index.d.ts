@@ -18,9 +18,8 @@ import { Config } from './settings-store.ts';
 /** Stable cordis plugin name (matches the cordis.patch.yml insert id). */
 export declare const name = "bark-notify";
 /**
- * Required services: none hard — the settings seam and the connection service
- * are each awaited through `ctx.inject` inside apply, so a profile lacking
- * either still runs the event listener with the composition defaults.
+ * Settings is optional: profiles without it can still send notifications
+ * using the resolved Config.
  */
 export declare const inject: string[];
 /**

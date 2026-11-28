@@ -11,7 +11,7 @@
  * @module dsh-notify-bark/remote-contract
  */
 import type { RemoteResult, TypertCodec, TypertRemoteContribution } from '@deepseek-ai/dsh-typert-protocol';
-import { sanitizeBarkUrl, type BarkSettings as Settings } from './settings-store.ts';
+import { sanitizeBarkUrl, type BarkEventSettings, type BarkSettings as Settings } from './settings-store.ts';
 /** npm package that owns the Remote methods. */
 export declare const BARK_REMOTE_PACKAGE = "dsh-notify-bark";
 /** Wire namespace of this plugin's Remote surface. */
@@ -48,8 +48,8 @@ export interface BarkTestResult {
  * set business parameter: the settings patch to persist. barkUrl is optional
  * and carries a NEW value only — the section never restates the stored secret.
  */
-export type BarkSetPatch = Partial<Omit<Settings, 'barkUrl'>> & {
-    barkUrl?: string;
+export type BarkSetPatch = Partial<Omit<Settings, 'events'>> & {
+    events?: Partial<BarkEventSettings>;
 };
 /** Guard a set patch against unknown fields and wrong scalar types. */
 export declare function validateSetPatch(patch: unknown): {

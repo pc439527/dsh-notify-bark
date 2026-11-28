@@ -57,11 +57,14 @@ async function bootHost(live, settings) {
   const root = new Context()
   let listener
   const loggerLines = []
+  root.logger.exporter({
+    levels: { default: 1 },
+    export: ({ type, name, args }) => loggerLines.push(type + ' ' + name + ': ' + args.map(String).join(' ')),
+  })
   await root.plugin(async (ctxSettings) => {
     ctxSettings.provide('settings', settings)
   })
-  await root.plugin(async (ctxBark) => {
-    ctxBark.logger.exporter?.({ levels: { default: 0 }, export: ({ type, name, args }) => loggerLines.push(type + ' ' + name + ': ' + args.map(String).join(' ')) })
+  const fiber = await root.plugin(async (ctxBark) => {
     // Capture the listener the plugin registers (ctx.on receives it verbatim).
     const originalOn = ctxBark.on
     const capturedOn = (event, fn) => {
@@ -72,7 +75,7 @@ async function bootHost(live, settings) {
     applyHost(ctxBark, live)
   })
   await new Promise((resolve) => setTimeout(resolve, 60))
-  return { root, listener, loggerLines, settings, remote: root.get('barkNotify') }
+  return { root, fiber, listener, loggerLines, settings, remote: root.get('barkNotify') }
 }
 
 test('host apply mounts the barkNotify remote and suppresses the auto settings page', async () => {
@@ -118,6 +121,17 @@ test('barkNotify.set() persists normalized patches with the entry revision and r
   await assert.rejects(() => boot.remote.set('x'), (error) => error.code === 'gateway/bad-request')
 })
 
+test('barkNotify.set() reads a redacted descriptor and requires its revision', async () => {
+  const boot = await bootHost(liveConfig().live, settingsStub({
+    describe(options) {
+      assert.deepEqual(options, { redactSecrets: true })
+      return []
+    },
+  }))
+  await assert.rejects(() => boot.remote.set({ enabled: false }), /设置条目不可用/)
+  assert.deepEqual(boot.settings.writes, [])
+})
+
 test('barkNotify.test() pushes from the configured endpoint', async () => {
   let captured = null
   globalThis.fetch = async (url, init) => {
@@ -129,6 +143,35 @@ test('barkNotify.test() pushes from the configured endpoint', async () => {
   assert.deepEqual(sent, { sent: true })
   assert.equal(captured.url, 'https://api.day.app/testkey')
   assert.equal(JSON.parse(captured.init.body).group, 'Custom Group')
+})
+
+test('Bark HTTP failures are safe in the test Remote and the Host log', async () => {
+  globalThis.fetch = async (endpoint) => new Response(`Rejected ${endpoint}`, { status: 400 })
+  const boot = await bootHost(liveConfig().live, settingsStub())
+  const session = { id: 's1', header: {} }
+  boot.listener(session, { type: 'turn/end', seq: 9, data: { turn: 1, reason: { kind: 'completed' } } })
+  await assert.rejects(() => boot.remote.test(), (error) =>
+    error.isDSHRemoteError === true && error.code === 'gateway/internal' && error.message === 'Bark HTTP 400',
+  )
+  assert.ok(boot.loggerLines.some((line) => line.includes('Bark HTTP 400')))
+  assert.ok(boot.loggerLines.every((line) => !line.includes('testkey')))
+})
+
+test('unloading the Host fiber cancels in-flight event and test pushes', async () => {
+  const signals = []
+  globalThis.fetch = async (_endpoint, { signal }) => new Promise((_resolve, reject) => {
+    signals.push(signal)
+    signal.addEventListener('abort', () => reject(signal.reason), { once: true })
+  })
+  const boot = await bootHost(liveConfig().live, settingsStub())
+  const session = { id: 's1', header: {} }
+  boot.listener(session, { type: 'turn/end', seq: 9, data: { turn: 1, reason: { kind: 'completed' } } })
+  const testPush = assert.rejects(() => boot.remote.test(), (error) => error.code === 'gateway/cancelled')
+  assert.equal(signals.length, 2)
+  await boot.fiber.dispose()
+  await testPush
+  assert.ok(signals.every((signal) => signal.aborted))
+  assert.ok(boot.loggerLines.every((line) => !line.includes('推送失败')))
 })
 
 test('session/event listener pushes with the workspace title, level, and cached assistant text', async () => {

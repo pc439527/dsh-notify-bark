@@ -53,7 +53,8 @@ export declare function createDedupLedger(maxEntries?: number): {
  * Subscribe the plugin to `session/event` and push Bark notifications.
  * @param ctx - plugin context.
  * @param getSettings - live settings thunk (follows the settings section).
+ * @param deliverySignal - cancels pending sends when the plugin unloads.
  * @returns the disposer removing the listener (cordis ctx.on returns one).
  */
-export declare function createEventListener(ctx: Context, getSettings: () => BarkSettings): () => void;
+export declare function createEventListener(ctx: Context, getSettings: () => BarkSettings, deliverySignal?: AbortSignal): () => void;
 //# sourceMappingURL=event-listener.d.ts.map

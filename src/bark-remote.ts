@@ -12,8 +12,8 @@
 
 import type { Context } from '@deepseek-ai/cordis'
 import { Remote, RemoteError, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
-import { buildTestPayload, sendBark } from './bark-service.ts'
-import { maskBarkUrl, sanitizeBarkUrl, type BarkSettings } from './settings-store.ts'
+import { BARK_ERROR_CODES, BarkSendError, buildTestPayload, sendBark } from './bark-service.ts'
+import { maskBarkUrl, type BarkSettings } from './settings-store.ts'
 import {
   BARK_REMOTE_NAMESPACE,
   type BarkGetValue,
@@ -27,6 +27,8 @@ import {
 export interface BarkRemoteDeps {
   /** Live resolved settings (follows the settings document). */
   getSettings(): BarkSettings
+  /** Cancels test deliveries when the plugin unloads. */
+  deliverySignal?: AbortSignal
   /** Persist a validated patch into the plugin's settings namespace. */
   update(patch: BarkSetPatch): Promise<void>
 }
@@ -70,12 +72,19 @@ export class BarkSettingsRemote extends TypertRemoteService {
 
   @Remote async test(group?: string): Promise<BarkTestResult> {
     const settings = this.deps.getSettings()
-    const endpoint = sanitizeBarkUrl(settings.barkUrl)
-    if (endpoint.length === 0) {
-      throw new RemoteError('gateway/bad-request', '未配置有效的 Bark 推送地址（请只填写基础地址，不要粘贴 curl 命令），请先修正并保存', {})
-    }
     const resolved = typeof group === 'string' && group.trim().length > 0 ? group.trim() : settings.group
-    await sendBark(endpoint, buildTestPayload(resolved))
+    try {
+      await sendBark(settings.barkUrl, buildTestPayload(resolved), undefined, this.deps.deliverySignal)
+    } catch (error) {
+      if (!(error instanceof BarkSendError)) throw new RemoteError('gateway/internal', 'Bark 测试推送失败', {})
+      if (error.code === BARK_ERROR_CODES.NOT_CONFIGURED) {
+        throw new RemoteError('gateway/bad-request', `${error.message}，请先修正并保存`, {})
+      }
+      if (error.code === BARK_ERROR_CODES.CANCELLED) {
+        throw new RemoteError('gateway/cancelled', error.message, {})
+      }
+      throw new RemoteError('gateway/internal', error.message, {})
+    }
     return { sent: true }
   }
 }

@@ -17,6 +17,8 @@ import { type BarkGetValue, type BarkSetPatch, type BarkSetResult, type BarkTest
 export interface BarkRemoteDeps {
     /** Live resolved settings (follows the settings document). */
     getSettings(): BarkSettings;
+    /** Cancels test deliveries when the plugin unloads. */
+    deliverySignal?: AbortSignal;
     /** Persist a validated patch into the plugin's settings namespace. */
     update(patch: BarkSetPatch): Promise<void>;
 }

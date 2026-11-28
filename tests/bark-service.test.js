@@ -21,12 +21,21 @@ test('sendBark posts JSON to the normalized endpoint and accepts 2xx', async () 
   assert.equal(body.level, 'active')
 })
 
-test('sendBark rejects a non-2xx response with the HTTP code', async () => {
-  globalThis.fetch = async () => new Response('{"code":400,"message":"bad"}', { status: 400 })
+test('sendBark reports only the HTTP status and cancels the unread body', async () => {
+  let cancelled = false
+  globalThis.fetch = async () => new Response(new ReadableStream({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(`Rejected ${ENDPOINT}`))
+    },
+    cancel() {
+      cancelled = true
+    },
+  }), { status: 400 })
   await assert.rejects(
     () => sendBark(ENDPOINT, { title: 't', body: 'b' }),
-    (error) => error instanceof BarkSendError && error.code === BARK_ERROR_CODES.HTTP_ERROR && /400/.test(error.message),
+    (error) => error instanceof BarkSendError && error.code === BARK_ERROR_CODES.HTTP_ERROR && error.message === 'Bark HTTP 400',
   )
+  assert.equal(cancelled, true)
 })
 
 test('sendBark throws NOT_CONFIGURED for an empty endpoint', async () => {
@@ -68,10 +77,10 @@ test('sendBark aborts on timeout and reports BARK_TIMEOUT', async () => {
 })
 
 test('sendBark folds network failures into BARK_NETWORK_ERROR', async () => {
-  globalThis.fetch = async () => { throw new TypeError('fetch failed') }
+  globalThis.fetch = async () => { throw new TypeError(`fetch failed for ${ENDPOINT}`) }
   await assert.rejects(
     () => sendBark(ENDPOINT, { title: 't', body: 'b' }),
-    (error) => error instanceof BarkSendError && error.code === BARK_ERROR_CODES.NETWORK_ERROR,
+    (error) => error instanceof BarkSendError && error.code === BARK_ERROR_CODES.NETWORK_ERROR && !error.message.includes('testkey'),
   )
 })
 
